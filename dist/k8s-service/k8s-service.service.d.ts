@@ -5,16 +5,23 @@ export declare class KubernetesService {
     initializeK8sClient(): Promise<void>;
     initializeK8sCoreV1Client(): Promise<void>;
     initializeK8sNetworkingClient(): Promise<void>;
-    createDeployment({ name, image }: {
+    createDeployment({ name, image, }: {
         name: string;
         image: string;
     }): Promise<any>;
-    createService({ name, port }: {
+    createService({ name, port, }: {
         name: string;
         port: number;
     }): Promise<any>;
-    createIngress({ name, host }: {
+    createIngress({ name, host, }: {
         name: string;
         host: string;
     }): Promise<any>;
+    deleteK8sResources({ name }: {
+        name: string;
+    }): Promise<any>;
+    getDeployments(): Promise<any>;
+    getServices(): Promise<any>;
+    getIngresses(): Promise<any>;
+    getPods(): Promise<any>;
 }

@@ -22,34 +22,162 @@ let KubernetesController = class KubernetesController {
     async initializeK8s({ name, image, port }) {
         if (name === undefined || image === undefined || port === undefined)
             throw new common_1.BadRequestException('Invalid Request, Parameters missing');
-        const deployment = await this.kubernetesService.createDeployment({ name: name, image: image });
+        const deployment = await this.kubernetesService.createDeployment({
+            name: name,
+            image: image,
+        });
         console.log(deployment);
         if (!deployment.success)
             throw new common_1.BadRequestException(deployment.message);
-        const service = await this.kubernetesService.createService({ name: name, port: port });
+        const service = await this.kubernetesService.createService({
+            name: name,
+            port: port,
+        });
         console.log(service);
         if (!service.success)
             throw new common_1.BadRequestException(service.message);
-        const ingress = await this.kubernetesService.createIngress({ name: name, host: name });
+        const ingress = await this.kubernetesService.createIngress({
+            name: name,
+            host: name,
+        });
         console.log(ingress);
         if (!ingress.success)
             throw new common_1.BadRequestException(ingress.message);
         return {
             success: true,
-            message: `Kubernetes Deployment Successfull! \n🚀 App link => http://${name}.life-au.live`
+            message: `Kubernetes Deployment Successfull! \n🚀 App link => http://${name}.life-au.live`,
         };
     }
     async createDeployment({ name, image }) {
-        const result = await this.kubernetesService.createDeployment({ name: name, image: image });
-        return result;
+        try {
+            const result = await this.kubernetesService.createDeployment({
+                name: name,
+                image: image,
+            });
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
     }
     async createService({ name, port }) {
-        const result = await this.kubernetesService.createService({ name: name, port: port });
-        return result;
+        try {
+            const result = await this.kubernetesService.createService({
+                name: name,
+                port: port,
+            });
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
     }
     async createIngress({ name, host }) {
-        const result = await this.kubernetesService.createIngress({ name: name, host: host });
-        return result;
+        try {
+            const result = await this.kubernetesService.createIngress({
+                name: name,
+                host: host,
+            });
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
+    }
+    async downK8s({ name }) {
+        try {
+            const result = await this.kubernetesService.deleteK8sResources({
+                name: name,
+            });
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
+    }
+    async getDeployments() {
+        try {
+            const result = await this.kubernetesService.getDeployments();
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
+    }
+    async getServices() {
+        try {
+            const result = await this.kubernetesService.getServices();
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
+    }
+    async getIngresses() {
+        try {
+            const result = await this.kubernetesService.getIngresses();
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
+    }
+    async getPods() {
+        try {
+            const result = await this.kubernetesService.getPods();
+            return {
+                success: true,
+                message: result,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: error,
+            };
+        }
     }
 };
 exports.KubernetesController = KubernetesController;
@@ -81,6 +209,37 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], KubernetesController.prototype, "createIngress", null);
+__decorate([
+    (0, common_1.Delete)('down'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], KubernetesController.prototype, "downK8s", null);
+__decorate([
+    (0, common_1.Get)('deployments'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], KubernetesController.prototype, "getDeployments", null);
+__decorate([
+    (0, common_1.Get)('services'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], KubernetesController.prototype, "getServices", null);
+__decorate([
+    (0, common_1.Get)('ingresses'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], KubernetesController.prototype, "getIngresses", null);
+__decorate([
+    (0, common_1.Get)('pods'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], KubernetesController.prototype, "getPods", null);
 exports.KubernetesController = KubernetesController = __decorate([
     (0, common_1.Controller)(''),
     __metadata("design:paramtypes", [k8s_service_service_1.KubernetesService])

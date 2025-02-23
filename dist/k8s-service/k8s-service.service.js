@@ -27,94 +27,108 @@ let KubernetesService = class KubernetesService {
         kc.loadFromDefault();
         this.k8sNetworkingApi = kc.makeApiClient(k8s.NetworkingV1Api);
     }
-    async createDeployment({ name, image }) {
+    async createDeployment({ name, image, }) {
         if (!this.k8sApi) {
             await this.initializeK8sClient();
         }
         const deployment = {
             metadata: {
-                name: `${name}`
+                name: `${name}`,
             },
             spec: {
                 selector: {
                     matchLabels: {
-                        app: `${name}`
-                    }
+                        app: `${name}`,
+                    },
                 },
                 replicas: 1,
                 template: {
                     metadata: {
                         labels: {
-                            app: `${name}`
-                        }
+                            app: `${name}`,
+                        },
                     },
                     spec: {
                         containers: [
                             {
                                 name: `${name}`,
                                 image: `${image}`,
-                            }
+                            },
                         ],
                         imagePullSecrets: [
                             {
-                                name: 'regcred'
-                            }
-                        ]
-                    }
-                }
-            }
+                                name: 'regcred',
+                            },
+                        ],
+                    },
+                },
+            },
         };
         try {
-            const response = await this.k8sApi.createNamespacedDeployment({ namespace: 'default', body: deployment });
+            const response = await this.k8sApi.createNamespacedDeployment({
+                namespace: 'default',
+                body: deployment,
+            });
             console.log('Yay! \nYou spawned: ' + deployment.metadata.name);
             console.log(response);
-            return { success: true, message: 'K8s Deployment created successfully 🎉' };
+            return {
+                success: true,
+                message: 'K8s Deployment created successfully 🎉',
+            };
         }
         catch (error) {
             console.error('Error creating deployment:', error);
-            return { success: false, message: `Failed to create K8s Deployment: ${error}` };
+            return {
+                success: false,
+                message: `Failed to create K8s Deployment: ${error}`,
+            };
         }
     }
-    async createService({ name, port }) {
+    async createService({ name, port, }) {
         if (!this.k8sCoreV1Api) {
             await this.initializeK8sCoreV1Client();
         }
         const service = {
             metadata: {
-                name: `${name}`
+                name: `${name}`,
             },
             spec: {
                 selector: {
-                    app: `${name}`
+                    app: `${name}`,
                 },
                 ports: [
                     {
                         protocol: 'TCP',
                         port: 80,
-                        targetPort: Number(port)
-                    }
+                        targetPort: Number(port),
+                    },
                 ],
-                type: 'ClusterIP'
-            }
+                type: 'ClusterIP',
+            },
         };
         try {
-            const response = await this.k8sCoreV1Api.createNamespacedService({ namespace: 'default', body: service });
+            const response = await this.k8sCoreV1Api.createNamespacedService({
+                namespace: 'default',
+                body: service,
+            });
             console.log('Yay! \nYou spawned: ' + service.metadata.name);
             console.log(response);
             return { success: true, message: 'K8s Service created successfully 🎉' };
         }
         catch (error) {
             console.error('Error creating service:', error);
-            return { success: false, message: `Failed to create K8s Service: ${error}` };
+            return {
+                success: false,
+                message: `Failed to create K8s Service: ${error}`,
+            };
         }
     }
-    async createIngress({ name, host }) {
+    async createIngress({ name, host, }) {
         if (!this.k8sNetworkingApi) {
             await this.initializeK8sNetworkingClient();
         }
         try {
-            await this.k8sNetworkingApi
-                .createNamespacedIngress({
+            await this.k8sNetworkingApi.createNamespacedIngress({
                 namespace: 'default',
                 body: {
                     apiVersion: 'networking.k8s.io/v1',
@@ -145,8 +159,8 @@ let KubernetesService = class KubernetesService {
                     status: {
                         loadBalancer: {
                             ingress: [{ ip: '188.166.199.51' }],
-                        }
-                    }
+                        },
+                    },
                 },
             });
             return { success: true, message: 'K8s Ingress created successfully 🎉' };
@@ -154,6 +168,83 @@ let KubernetesService = class KubernetesService {
         catch (e) {
             console.error('Error creating ingress:', e);
             return { success: false, message: `Failed to create K8s Ingress: ${e}` };
+        }
+    }
+    async deleteK8sResources({ name }) {
+        console.log('Deleting resources:', name);
+        if (!this.k8sApi) {
+            await this.initializeK8sClient();
+        }
+        if (!this.k8sCoreV1Api) {
+            await this.initializeK8sCoreV1Client();
+        }
+        if (!this.k8sNetworkingApi) {
+            await this.initializeK8sNetworkingClient();
+        }
+        try {
+            const downDeployment = await this.k8sApi.deleteNamespacedDeployment({ name: `${name}`, namespace: 'default' });
+            console.log('Deleted Deployment:', downDeployment);
+            const deleteService = await this.k8sCoreV1Api.deleteNamespacedService({ name: `${name}`, namespace: 'default' });
+            console.log('Deleted Service:', deleteService);
+            const deleteIngress = await this.k8sNetworkingApi.deleteNamespacedIngress({ name: `${name}`, namespace: 'default' });
+            console.log('Deleted Ingress:', deleteIngress);
+            return { success: true, message: 'K8s resources deleted successfully 🎉' };
+        }
+        catch (e) {
+            console.error('Error deleting resources:', e);
+            return { success: false, message: `Failed to delete K8s resources: ${e}` };
+        }
+    }
+    async getDeployments() {
+        if (!this.k8sApi) {
+            await this.initializeK8sClient();
+        }
+        try {
+            const response = await this.k8sApi.listNamespacedDeployment({ namespace: 'default' });
+            return response.items;
+        }
+        catch (e) {
+            console.error('Error getting deployments:', e);
+            return [];
+        }
+    }
+    async getServices() {
+        if (!this.k8sCoreV1Api) {
+            await this.initializeK8sCoreV1Client();
+        }
+        try {
+            const response = await this.k8sCoreV1Api.listNamespacedService({ namespace: 'default' });
+            return response.items;
+        }
+        catch (e) {
+            console.error('Error getting services:', e);
+            return [];
+        }
+    }
+    async getIngresses() {
+        if (!this.k8sNetworkingApi) {
+            await this.initializeK8sNetworkingClient();
+        }
+        try {
+            const response = await this.k8sNetworkingApi.listNamespacedIngress({ namespace: 'default' });
+            return response.items;
+        }
+        catch (e) {
+            console.error('Error getting ingress:', e);
+            return [];
+        }
+    }
+    async getPods() {
+        if (!this.k8sCoreV1Api) {
+            await this.initializeK8sCoreV1Client();
+        }
+        try {
+            const response = await this.k8sCoreV1Api.listNamespacedPod({ namespace: 'default' });
+            return response.items;
+        }
+        catch (e) {
+            console.error('Error getting pods:', e);
+            return [];
         }
     }
 };

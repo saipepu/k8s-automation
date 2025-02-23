@@ -10,13 +10,29 @@ export declare class KubernetesController {
     createDeployment({ name, image }: {
         name: string;
         image: string;
-    }): Promise<string>;
+    }): Promise<{
+        success: boolean;
+        message: any;
+    }>;
     createService({ name, port }: {
         name: string;
         port: number;
-    }): Promise<string>;
+    }): Promise<{
+        success: boolean;
+        message: any;
+    }>;
     createIngress({ name, host }: {
         name: string;
         host: string;
-    }): Promise<string>;
+    }): Promise<{
+        success: boolean;
+        message: any;
+    }>;
+    downK8s({ name }: {
+        name: string;
+    }): Promise<any>;
+    getDeployments(): Promise<any>;
+    getServices(): Promise<any>;
+    getIngresses(): Promise<any>;
+    getPods(): Promise<any>;
 }
