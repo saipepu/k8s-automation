@@ -188,11 +188,11 @@ let KubernetesService = class KubernetesService {
             console.log('Deleted Service:', deleteService);
             const deleteIngress = await this.k8sNetworkingApi.deleteNamespacedIngress({ name: `${name}`, namespace: 'default' });
             console.log('Deleted Ingress:', deleteIngress);
-            return { success: true, message: 'K8s resources deleted successfully 🎉' };
+            return 'K8s resources deleted successfully 🎉';
         }
         catch (e) {
             console.error('Error deleting resources:', e);
-            return { success: false, message: `Failed to delete K8s resources: ${e}` };
+            throw new common_1.BadRequestException(`Failed to delete K8s resources: ${e}`);
         }
     }
     async getDeployments() {

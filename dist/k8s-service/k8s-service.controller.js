@@ -115,7 +115,7 @@ let KubernetesController = class KubernetesController {
         catch (error) {
             return {
                 success: false,
-                message: error,
+                message: error.message,
             };
         }
     }
